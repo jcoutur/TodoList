@@ -1,0 +1,9 @@
+{
+	"scripts":{ 
+		"test" : "./vendor/bin/phpunit --colors=always -c tests/phpunit.xml" 
+	},
+    "require": {
+        "phpunit/phpunit": "^7.2",
+		"guzzlehttp/guzzle": "~6.0"
+    }
+}
