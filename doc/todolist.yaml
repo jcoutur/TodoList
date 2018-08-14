@@ -1,0 +1,238 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: "Todo Lists Manager"
+  description: ""
+  contact:
+    name: "Jonathan Couturier"
+    email: "jcoutur@gmail.com"
+schemes: [http]
+basePath: /~jonathan/app/api
+tags: 
+  - name: Todo lists
+    description: Everything about your todo lists
+paths:
+  /todolists:
+    get:
+      tags: 
+        - Todo lists
+      summary: "Gets all the todo lists"
+      description: "Gets all the todo lists"
+      produces: 
+      - "application/json"
+      responses:
+        200:
+          description: OK
+          examples: 
+            application/json: {"data":[{"id":"1", "name":"Todo list 1", "description" :"Description 1"},{"id":"2","name":"Todo list 2","description":"Description 2"}]}
+        204:
+          description: The user has no todo list
+          examples: 
+            application/json: {"message":"The user has no todo list"}
+      security: 
+        - todolists_auth: []
+    post:
+      tags: 
+        - Todo lists
+      summary: Adds a todo list
+      consumes: 
+        - application/json
+      produces: 
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/Todolists'
+            example: 
+              name: My first todolist
+              description: Description of my first todo list
+      responses:
+        '201':
+          description: Todo list successfully added
+          examples: 
+            application/json: {"message":"Todo list successfully added"}
+        '400':
+          description: Bad Request<br>Possible error messages are<br>
+                        &nbsp;- Missing name or description variable<br>
+                        &nbsp;- Unable to add your todolist, verify the todo list name is not already taken<br>
+                        &nbsp;- Verify the length of the name or description<br>
+                        &nbsp;- Accept only parameters in JSON format<br>
+                        &nbsp;- SQL ERROR
+          examples: 
+           application/json: 
+            {"message": "Missing name or description variable" }
+      security: 
+        - todolists_auth: []
+            
+            
+  '/todolists/{todoListId}':
+    get:
+      tags: 
+        - Todo lists
+      summary: Gets a todo list
+      description: ''
+      parameters:
+      - name: todoListId
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Id of the todo list to be read
+      produces: 
+        - application/json
+      responses:
+        '200':
+          description: OK
+          examples: 
+            application/json: 
+              { "id":"1",
+                "name": "My first todo list",
+                "description":"Description of my first todo list",
+                "items": [
+                  {"id":"1", "name": "Item 1", "description": "Description of item 1", "completed":true},{"id":"2", "name": "Item 2", "description": "Description of item 2", "completed":false}]}
+      security: 
+        - todolists_auth: []
+    
+    put:
+      tags: 
+        - Todo lists
+      summary: Updates an existing todo list
+      parameters: 
+      - name: todoListId
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Id of the todo list to be updated
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          items:
+            $ref: '#/definitions/Todolists'
+          example: 
+              name: My first todolist
+              description: Description of my first todo list
+      responses:
+        '204':
+          description: No Content
+          examples: 
+            application/json:
+              {"message":"Todo list successfully updated"}
+        '400':
+          description: Bad Request<br>Possible error messages are <br>
+                        &nbsp;- Missing name or description variable<br>
+                        &nbsp;- Id is not numeric<br>
+                        &nbsp;- Unable to update due to duplicate entry<br>
+                        &nbsp;- Verify the length of name or description variable<br>
+                        &nbsp;- Accept only parameters in JSON format<br>
+                        &nbsp;- SQL ERROR
+          examples: 
+            application/json: 
+              {"message": "Missing name or description variable" }
+        '404':
+          description: Todo List Not Found
+          examples: 
+            application/json:
+              {"message":"Todo list not found!"}
+      security: 
+        - todolists_auth: []
+          
+    delete:
+      tags: 
+        - Todo lists
+      summary: Deletes an existing todo list
+      parameters: 
+      - name: todoListId
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Id of the todo list to be updated
+      responses:
+        '204':
+          description: No Content
+          examples:
+            application/json:
+                {"message": "Todo list successfully deleted"}
+        '400':
+          description: Bad Request
+          examples: 
+            application/json:
+              {"message":"Id is not numeric"}
+        '404':
+          description: Todo list not found
+          examples:
+            application/json:
+              {"message":"Todo list not found!"}
+      security: 
+        - todolists_auth: []
+  '/todolists/onlyIncompleted':
+    get:
+      tags:
+        - Todo lists
+      summary: Ges all the incompleted todo lists
+      description: ''
+      responses:
+        '200':
+          description: OK
+          examples: 
+            application/json:
+              {"data":[{"id":1, "name":"Todo list 1","description":"Description 1"},
+              {"id":2, "name":"Todo list 2","description":"Description 2"}]}
+        '204':
+          description: The user has no todo list
+          examples: 
+            application/json: {"message":"The user has no todo list"}        
+securityDefinitions:
+  todolists_auth:
+    type: basic
+
+definitions:
+  Todolists:  
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name: 
+        type: string
+      description:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/TodolistItem'
+    example: 
+      id: 123
+      name: My frist todo list
+      description: Description of my first todo list
+    required: 
+      - id
+      - name
+  TodolistItem:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      todoListId:
+        type: integer
+        format: int64
+      name:
+        type: string
+      description:
+        type: string
+      completed:
+        type: boolean
+    required: 
+      - id
+      - todoListId
+      - name
+      - completed
